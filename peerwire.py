@@ -309,6 +309,14 @@ class Peer(object):
 
 
 class Bitfield(object):
+    """
+    Super simple and very inefficient way to store the bit-torrent bitfield.
+
+    We simply take a bitfield and convert it to a list of boolean values. So the bitfield "11011" is converted to the
+    list [True, True, False, True, True] This way we can use the add_index(2) to change this to
+    [True, True, True, True, True] and has_index(2) will return True. If add_index is called on an index that is out of
+    range the missing indexes is simply set to False.
+    """
     def __init__(self, bitfield=b""):
         self.bitfield = []
 

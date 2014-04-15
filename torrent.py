@@ -6,11 +6,12 @@ from __future__ import (
 )
 import random
 import string
-
 import sys
+
 import bencode
 import peerwire
 import tracker
+
 
 if sys.version_info.major == 2:
     chr = unichr
@@ -40,6 +41,7 @@ def generate_peer_id():
 
     return peer_id
 
+
 PEER_ID = generate_peer_id()
 
 
@@ -49,14 +51,16 @@ class Torrent(object):
             file_content = bytes(f.read())
             self.meta_info = bencode.decode(file_content)
 
-        self.handshake = peerwire.generate_handshake(tracker.calc_info_hash(self.meta_info), PEER_ID)
+        self.handshake = peerwire.generate_handshake(
+            tracker.calc_info_hash(self.meta_info), PEER_ID)
         self.peers = []
         self.bitfield = peerwire.Bitfield()
 
 
     def get_peers(self):
         peers = tracker.get_peers(self.meta_info, PEER_ID)
-        peers = [peerwire.Peer(peer['ip'], peer['port'], peer['peer_id']) for peer in peers]
+        peers = [peerwire.Peer(peer['ip'], peer['port'], peer['peer_id'])
+                 for peer in peers]
 
         # Maybe check for duplicates?
         self.peers.extend(peers)

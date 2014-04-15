@@ -18,7 +18,6 @@ elif sys.version_info.major == 3:
     string_type = str
 
 
-
 def main(argv):
     path = argv[1]
 

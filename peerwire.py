@@ -318,8 +318,9 @@ class Peer(object):
             # piece message is variable length, where X is the length of the
             # block. The payload contains the following information:
             #  index: integer specifying the zero-based piece index
-            #  begin: integer specifying the zero-based byte offset within the piece
-            #  block: block of data, which is a subset of the piece specified by index
+            #  begin: integer specifying the zero-based byte offset within the
+            #  piece block: block of data, which is a subset of the piece
+            #  specified by index
             pass
         elif message_id == 8:
             # cancel: <len=0013><id=8><index><begin><length

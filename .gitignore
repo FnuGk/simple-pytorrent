@@ -8,6 +8,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+venv/
 bin/
 build/
 develop-eggs/
@@ -51,4 +52,10 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# OS specific junk
+.DS_Store
+
+# PyCharms IDE
+.idea/
 

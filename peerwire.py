@@ -167,22 +167,24 @@ def decode_handshake(handshake):
 
 
 class Peer(object):
+    # TODO: Somehow make the Peer do I/O in a threaded manner
     def __init__(self, ip, port, peer_id):
         self.ip = ip
         self.port = port
+
+        self.peers_info_hash = None
+        self.has_shook_hands = False
+        self.socket = None
+
         self.peer_id = peer_id
 
+        # Peer state
         self.am_choking = True  # this client is choking the peer
         self.am_interested = False  # this client is interested in the peer
         self.peer_choking = True  # peer is choking this client
         self.peer_interested = False  # peer is interested in this client
 
-        self.peers_info_hash = None
-
-        self.has_shook_hands = False
-        self.socket = None
-
-        self.bitfield = Bitfield()
+        self.bitfield = Bitfield()  # Contains info on what pieces the peer has
 
     def __str__(self):
         return "Peer: {ip}:{port}".format(ip=self.ip, port=self.port)
@@ -248,27 +250,26 @@ class Peer(object):
         # TODO: handle received messages!
         if message_id == 0:
             # choke: <len=0001><id=0>
-
             # The choke message is fixed-length and has no payload.
+
             self.peer_choking = True
         elif message_id == 1:
             # unchoke: <len=0001><id=1>
-
             # The unchoke message is fixed-length and has no payload
+
             self.peer_choking = False
         elif message_id == 2:
             # interested: <len=0001><id=2>
-
             # The interested message is fixed-length and has no payload
-            pass
+
+            self.peer_interested = True
         elif message_id == 3:
             # not interested: <len=0001><id=3>
-
             # The not interested message is fixed-length and has no payload
-            pass
+
+            self.peer_interested = False
         elif message_id == 4:
             # have: <len=0005><id=4><piece index>
-
             # The have message is fixed length. The payload is the zero-based
             # index of a piece that has just been successfully downloaded and
             # verified via the hash.
@@ -277,7 +278,6 @@ class Peer(object):
             self.bitfield.add_index(piece_index)
         elif message_id == 5:
             # bitfield: <len=0001+X><id=5><bitfield>
-
             # The bitfield message may only be sent immediately after the
             # handshaking sequence is completed, and before any other messages
             # are sent. It is optional, and need not be sent if a client has no
@@ -303,7 +303,6 @@ class Peer(object):
             self.bitfield = Bitfield(payload)
         elif message_id == 6:
             # request: <len=0013><id=6><index><begin><length>
-
             # The request message is fixed length, and is used to request a
             # block. The payload contains the following information:
             #  index: integer specifying the zero-based piece index
@@ -311,35 +310,36 @@ class Peer(object):
             #   the piece
             #  length: integer specifying the requested length.
 
-            pass
+            pass  # TODO: Implement this
         elif message_id == 7:
             # piece: <len=0009+X><id=7><index><begin><block>
-
             # piece message is variable length, where X is the length of the
             # block. The payload contains the following information:
             #  index: integer specifying the zero-based piece index
             #  begin: integer specifying the zero-based byte offset within the
             #  piece block: block of data, which is a subset of the piece
             #  specified by index
-            pass
+
+            pass  # TODO: Implement this
         elif message_id == 8:
             # cancel: <len=0013><id=8><index><begin><length
-
             # cancel message is fixed length, and is used to cancel block
             # requests. The payload is identical to that of the "request"
             # message. It is typically used during "End Game".
-            pass
+
+            pass  # TODO: Implement this
         elif message_id == 9:
             # port: <len=0003><id=9><listen-port>
-
             # The port message is sent by newer versions of the Mainline that
             # implements a DHT tracker. The listen port is the port this peer's
             # DHT node is listening on. This peer should be inserted in the
             # local routing table (if DHT tracker is supported).
-            pass
+
+            pass  # TODO: Implement this
         else:
             # !!! Unknown message id
-            pass
+
+            pass  # TODO: Implement this
 
         print(repr(message_id), repr(payload))
 

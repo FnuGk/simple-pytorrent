@@ -19,6 +19,7 @@ from __future__ import (
 import socket
 import struct
 import sys
+from socketthread import receive_all
 
 
 if sys.version_info.major == 2:
@@ -29,23 +30,6 @@ elif sys.version_info.major == 3:
     string_type = str
 
 LENGTH_PREFIX_SIZE = 4
-
-
-def receive_all(sock, n):
-    """
-    Helper function to fully receive an arbitrary amount of data from a socket.
-
-    :param sock: Socket connection
-    :param n: Number of bytes to receive
-    :return: Received data
-    """
-    data = b''
-    while len(data) < n:
-        packet = sock.recv(n - len(data))
-        if not packet:
-            return None
-        data += packet
-    return data
 
 
 class HandshakeException(Exception):

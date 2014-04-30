@@ -115,6 +115,7 @@ class SocketThread(threading.Thread):
                 else:
                     # TODO: Handle invalid command
                     pass
+                # TODO: should we call command_queue.task_done() here?
             except queue.Empty:
                 continue
 
@@ -162,6 +163,7 @@ class SocketThread(threading.Thread):
         """
         try:
             reply = self.reply_queue.get(block=block, timeout=timeout)
+            # TODO: should we call reply_queue.task_done() here?
             return reply
         except queue.empty:
             return None

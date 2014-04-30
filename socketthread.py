@@ -183,7 +183,7 @@ class SocketThread(threading.Thread):
             self.socket.connect(address)
             self.reply_queue.put(SocketReply(SocketReply.SUCCESS))
         except socket.error as e:
-            self.reply_queue.put(SocketReply(SocketReply.ERROR), e)
+            self.reply_queue.put(SocketReply(SocketReply.ERROR, e))
 
     def _handle_CLOSE(self):
         """

@@ -34,7 +34,7 @@ def main(argv):
             if reply is None: continue
 
             if reply.reply == SocketReply.ERROR:
-                print("Error:", str(reply.payload))
+                print("Error:", reply.payload)
                 continue
             elif reply.reply == SocketReply.SUCCESS:
                 print("Connected to: {}".format(peer))

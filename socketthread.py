@@ -83,6 +83,7 @@ class SocketThread(threading.Thread):
     """
     Implements the threading.Thread interface
     """
+    # TODO: should we keep track of what command corresponds to what reply?
 
     def __init__(self):
         super(SocketThread, self).__init__()
@@ -121,15 +122,31 @@ class SocketThread(threading.Thread):
 
 
     def connect(self, address):
+        """
+        Connects the socket the the given address
+        :param address: (host, port) Tuple
+        """
         self.command_queue.put(SocketCommand(SocketCommand.CONNECT, address))
 
     def close(self):
+        """
+        Closes the socket
+        """
         self.command_queue.put(SocketCommand(SocketCommand.CONNECT))
 
     def send(self, payload):
+        """
+        Sends the given payload to the socket. Requires an open and valid socket
+        :param payload: Byte string of data
+        """
         self.command_queue.put(SocketCommand(SocketCommand.SEND, payload))
 
     def receive(self, n):
+        """
+        Receives a specified number of bytes from the socket. Requires an open
+        and valid socket.
+        :param n: Number of bytes to receive from the socket.
+        """
         self.command_queue.put(SocketCommand(SocketCommand.RECEIVE, n))
 
     def get_reply(self, block=True, timeout=None):

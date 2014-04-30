@@ -51,7 +51,7 @@ class SocketCommand(object):
 
     SocketCommand.CONNECT       (host, port) tuple
     SocketCommand.SEND          Binary data string
-    SocketCommand.RECEIVE       None
+    SocketCommand.RECEIVE       Number of bytes to receive
     SocketCommand.CLOSE         None
     """
 
@@ -116,6 +116,19 @@ class SocketThread(threading.Thread):
     def join(self, timeout=None):
         self.alive.clear()
         threading.Thread.join(self, timeout)
+
+
+    def connect(self, address):
+        self.command_queue.put(SocketCommand(SocketCommand.CONNECT, address))
+
+    def close(self):
+        self.command_queue.put(SocketCommand(SocketCommand.CONNECT))
+
+    def send(self, payload):
+        self.command_queue.put(SocketCommand(SocketCommand.SEND, payload))
+
+    def receive(self, n):
+        self.command_queue.put(SocketCommand(SocketCommand.RECEIVE, n))
 
 
     def _handle_CONNECT(self, address):

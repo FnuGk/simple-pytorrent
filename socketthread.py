@@ -90,9 +90,11 @@ class SocketThread(threading.Thread):
 
         self.command_queue = queue.Queue()
         self.reply_queue = queue.Queue()
-        self.alive = threading.Event()
-        self.alive.set()
         self.socket = None
+
+        self.alive = threading.Event()
+        self.start()
+        self.alive.set()
 
     def run(self):
         while self.alive.isSet():

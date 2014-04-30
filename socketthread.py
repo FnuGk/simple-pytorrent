@@ -61,6 +61,7 @@ class SocketCommand(object):
         self.command = command
         self.payload = payload
 
+
 class SocketReply(object):
     """
     Reply object for communicating with SocketThread.
@@ -131,6 +132,21 @@ class SocketThread(threading.Thread):
     def receive(self, n):
         self.command_queue.put(SocketCommand(SocketCommand.RECEIVE, n))
 
+    def get_reply(self, block=True, timeout=None):
+        """
+        Fetches a reply from the reply queue.
+        :param block: Boolean whether the call should block until a reply i
+        present
+        :param timeout: If block is true wait maximum timeout number of seconds
+        :return: A SocketReply object is returned if possible. Else if returns
+        None.
+        """
+        try:
+            reply = self.reply_queue.get(block=block, timeout=timeout)
+            return reply
+        except queue.empty:
+            return None
+
 
     def _handle_CONNECT(self, address):
         """
@@ -176,6 +192,7 @@ class SocketThread(threading.Thread):
         """
         try:
             received_data = receive_all(self.socket, n)
-            self.reply_queue.put(SocketReply(SocketReply.SUCCESS, received_data))
+            self.reply_queue.put(
+                SocketReply(SocketReply.SUCCESS, received_data))
         except socket.error as e:
             self.reply_queue.put(SocketReply(SocketReply.ERROR, e))

@@ -106,7 +106,9 @@ def send_handshake(handshake, ip, port):
 
         response_data = receive_all(tcp_sock, len(handshake))
 
-        if response_data is None:
+        # The handshake is specified to be (49+len(pstr)) bytes long so we can
+        # assume that it should be at least 49 bytes long
+        if len(response_data) < 49:
             tcp_sock.close()
             raise HandshakeException(ip, port)
     except socket.error:

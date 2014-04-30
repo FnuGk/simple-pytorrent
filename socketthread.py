@@ -165,7 +165,7 @@ class SocketThread(threading.Thread):
             reply = self.reply_queue.get(block=block, timeout=timeout)
             # TODO: should we call reply_queue.task_done() here?
             return reply
-        except queue.empty:
+        except queue.Empty:
             return None
 
 

@@ -19,7 +19,7 @@ from __future__ import (
 import socket
 import struct
 import sys
-from socketthread import receive_all
+from socketthread import receive_all, SocketThread
 
 
 if sys.version_info.major == 2:
@@ -83,40 +83,6 @@ def generate_handshake(info_hash, peer_id):
     return handshake
 
 
-def send_handshake(handshake, ip, port):
-    """
-    Opens a connection to the given ip, port tries to send the handshake.
-
-    :param handshake: The handshake that is send
-    :param ip: The ip that the socket is opened on
-    :param port: The port the receiver is listening on.
-    :return: The open Socket and the response data
-    :raise HandshakeException: a HandshakeException is raised if unable to
-    establish connection or the handshake was refused.
-    """
-    address = (ip, port)
-
-    tcp_sock = socket.socket(socket.AF_INET,
-                             socket.SOCK_STREAM)  # tcp connection
-
-    try:
-        tcp_sock.connect(address)
-
-        tcp_sock.send(handshake)
-
-        response_data = receive_all(tcp_sock, len(handshake))
-
-        # The handshake is specified to be (49+len(pstr)) bytes long so we can
-        # assume that it should be at least 49 bytes long
-        if len(response_data) < 49:
-            tcp_sock.close()
-            raise HandshakeException(ip, port)
-    except socket.error:
-        tcp_sock.close()
-        raise HandshakeException(ip, port)
-
-    return tcp_sock, response_data
-
 
 def decode_handshake(handshake):
     """
@@ -160,7 +126,7 @@ class Peer(object):
 
         self.peers_info_hash = None
         self.has_shook_hands = False
-        self.socket = None
+        self.socket = SocketThread() # TODO: Should we inherit from this instead
 
         self.peer_id = peer_id
 
@@ -175,26 +141,15 @@ class Peer(object):
     def __str__(self):
         return "Peer: {ip}:{port}".format(ip=self.ip, port=self.port)
 
-    def initiate_connection(self, handshake):
+    def connect(self):
         """
         Creates and initiates a tcp connection to the peer.
 
         :param handshake: The handshake that is send to the peer.
         :return: True if success, False on failure
         """
-        try:
-            self.socket, response = send_handshake(handshake, self.ip,
-                                                   self.port)
-            received_handshake = decode_handshake(response)
-
-            self.peer_id = received_handshake['peer_id']
-            self.peers_info_hash = received_handshake['info_hash']
-
-            self.has_shook_hands = True
-        except HandshakeException:
-            self.has_shook_hands = False
-
-        return self.has_shook_hands
+        address = (self.ip, self.port)
+        self.socket.connect(address)
 
     def receive_message(self):
         """

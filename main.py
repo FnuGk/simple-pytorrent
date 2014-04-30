@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 import sys
+from socketthread import SocketReply
 
 from torrent import Torrent
 
@@ -25,10 +26,20 @@ def main(argv):
     torrent.get_peers()
     for peer in torrent.peers:
         print("Connecting to: {}".format(peer))
-        if peer.initiate_connection(torrent.handshake):
-            while 1:
-                peer.receive_message()
-                print(peer.bitfield)
+        peer.connect()
+
+    while (1):
+        for peer in torrent.peers:
+            reply = peer.socket.get_reply(block=True, timeout=0.01)
+            if reply is None: continue
+
+            if reply.reply == SocketReply.ERROR:
+                print("Error:", str(reply.payload))
+                continue
+            elif reply.reply == SocketReply.SUCCESS:
+                print("Connected to: {}".format(peer))
+
+            print("payload:", reply.payload)
 
 
 if __name__ == "__main__":

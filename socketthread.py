@@ -106,7 +106,8 @@ class SocketThread(threading.Thread):
                     payload = cmd.payload
                     self._handle_SEND(payload)
                 elif cmd.command == SocketCommand.RECEIVE:
-                    pass
+                    number_of_bytes = cmd.payload
+                    self._handle_RECEIVE(number_of_bytes)
                 else:
                     # TODO: Handle invalid command
                     pass

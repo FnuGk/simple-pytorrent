@@ -263,7 +263,11 @@ class SocketThread(threading.Thread):
                         format(prefix_size)
                     raise TypeError(error)
 
-                received_data = receive_all(self.socket, message_length)
+                if message_length == 0:
+                    received_data = b''
+                else:
+                    received_data = receive_all(self.socket, message_length)
+
                 if len(received_data) == message_length:
                     message = (length_prefix, received_data)
                     self.reply_queue.put(SocketReply(SocketReply.SUCCESS,

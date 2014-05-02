@@ -194,9 +194,14 @@ class Peer(object):
         :return:
         """
 
-        # length prefix is a four byte big-endian value
-        length_prefix = socketthread.receive_all(self.socket, LENGTH_PREFIX_SIZE)
-        length_prefix = struct.unpack(b">I", length_prefix)[0]  # it's a tuple
+        self.socket.receive_with_prefix(LENGTH_PREFIX_SIZE)
+
+        reply = self.socket.get_reply(block=True, timeout=None)
+        if reply.status != "success":
+            raise reply.payload
+
+        length_prefix, message = reply.payload
+        length_prefix = struct.unpack(b">I", length_prefix)[0]
         if length_prefix == 0:
             # keep-alive: <len=0000>
 
@@ -209,7 +214,6 @@ class Peer(object):
             # amount of time is generally two minutes.
             print("keep alive")
             return
-        message = socketthread.receive_all(self.socket, length_prefix)
 
         # The message ID is a single decimal byte so just extract it from the
         # received message

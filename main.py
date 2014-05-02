@@ -48,7 +48,11 @@ def main(argv):
                     try:
                         print("Receiving handshake from {}".format(peer))
                         peer.receive_handshake()
-                        print(repr(peer.handshake))
+                        print(peer.handshake)
+
+                        if peer.handshake['info_hash'] == peerwire.decode_handshake(torrent.handshake)['info_hash']:
+                            print("Handshake accepted from {}".format(peer))
+                            peer.receive_message()
                     except peerwire.HandshakeException as e:
                         print(e)
 

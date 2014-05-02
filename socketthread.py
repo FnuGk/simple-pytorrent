@@ -12,6 +12,7 @@ from __future__ import (
     unicode_literals
 )
 import socket
+import struct
 
 import sys
 import threading
@@ -47,18 +48,20 @@ def receive_all(sock, n):
 class SocketCommand(object):
     """
     Command object for communicating with SocketThread.
-    command must be either:     payload must be:
+    command must be either:             payload must be:
 
-    SocketCommand.CONNECT       (host, port) tuple
-    SocketCommand.SEND          Binary data string
-    SocketCommand.RECEIVE       Number of bytes to receive
-    SocketCommand.CLOSE         None
+    SocketCommand.CONNECT               (host, port) tuple
+    SocketCommand.SEND                  Binary data string
+    SocketCommand.RECEIVE               Number of bytes to receive
+    SocketCommand.RECEIVE_WITH_PREFIX   byte size of the prefix
+    SocketCommand.CLOSE                 None
     """
 
     # The available socket commands:
     CONNECT = "connect"
     SEND = "send"
     RECEIVE = "receive"
+    RECEIVE_WITH_PREFIX = "receive_with_prefix"
     CLOSE = "close"
 
     def __init__(self, command, payload=None):
@@ -119,6 +122,9 @@ class SocketThread(threading.Thread):
                 elif cmd.command == SocketCommand.RECEIVE:
                     number_of_bytes = cmd.payload
                     self._handle_RECEIVE(number_of_bytes)
+                elif cmd.command == SocketCommand.RECEIVE_WITH_PREFIX:
+                    prefix_size = cmd.payload
+                    self._handle_RECEIVE_WITH_PREFIX(prefix_size)
                 else:
                     # TODO: Handle invalid command
                     pass
@@ -159,6 +165,15 @@ class SocketThread(threading.Thread):
         :param n: Number of bytes to receive from the socket.
         """
         self.command_queue.put(SocketCommand(SocketCommand.RECEIVE, n))
+
+    def receive_with_prefix(self, prefix_size):
+        """
+        Receive a message that has a length prefix that is prefix_size bytes
+        long.
+        :param prefix_size: byte size of the prefix
+        """
+        self.command_queue.put(SocketCommand(SocketCommand.RECEIVE_WITH_PREFIX,
+                                             prefix_size))
 
     def get_reply(self, block=True, timeout=None):
         """
@@ -224,3 +239,36 @@ class SocketThread(threading.Thread):
                 SocketReply(SocketReply.SUCCESS, received_data))
         except socket.error as e:
             self.reply_queue.put(SocketReply(SocketReply.ERROR, e))
+
+    def _handle_RECEIVE_WITH_PREFIX(self, prefix_size):
+        """
+        Handles the receive with prefix command. This require an open and valid
+        socket connection.
+        :param prefix_size: byte size of the prefix
+        :return:
+        """
+        try:
+            length_prefix = receive_all(self.socket, prefix_size)
+            if len(length_prefix) == prefix_size:
+                if prefix_size == 1:
+                    message_length = struct.unpack(b"!B", length_prefix)[0]
+                elif prefix_size == 2:
+                    message_length = struct.unpack(b"!H", length_prefix)[0]
+                elif prefix_size == 4:
+                    message_length = struct.unpack(b"!L", length_prefix)[0]
+                elif prefix_size == 8:
+                    message_length = struct.unpack(b"!Q", length_prefix)[0]
+                else:
+                    message_length = struct.unpack(b"!P", length_prefix)[0]
+
+                received_data = receive_all(self.socket, message_length)
+                if len(received_data) == message_length:
+                    message = (message_length, received_data)
+                    self.reply_queue.put(SocketReply(SocketReply.SUCCESS,
+                                                     message))
+                    return
+            self.reply_queue.put(SocketReply(
+                SocketReply.ERROR, socket.error("Socket closed prematurely")))
+        except socket.error as e:
+            self.reply_queue.put(SocketReply(SocketReply.ERROR, e))
+

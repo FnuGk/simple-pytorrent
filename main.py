@@ -7,6 +7,7 @@ from __future__ import (
 
 import sys
 import time
+import peerwire
 from socketthread import SocketReply
 
 from torrent import Torrent
@@ -44,9 +45,12 @@ def main(argv):
                 print("Connected to: {}".format(peer))
                 peer.send_handshake(torrent.handshake)
                 if peer.socket.get_reply(block=True).status == "success":
-                    print("Receiving handshake from {}".format(peer))
-                    peer.receive_handshake()
-                    print(repr(peer.handshake))
+                    try:
+                        print("Receiving handshake from {}".format(peer))
+                        peer.receive_handshake()
+                        print(repr(peer.handshake))
+                    except peerwire.HandshakeException as e:
+                        print(e)
 
             print("{} reply: {}".format(peer, reply.status))
             print("{} payload: {}".format(peer, reply.payload))

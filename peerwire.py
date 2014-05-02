@@ -36,12 +36,11 @@ class HandshakeException(Exception):
     Base exception for peer wire hand shake
     """
 
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
+    def __init__(self, peer):
+        self.peer = peer
 
     def __str__(self):
-        return "{}:{} Refused the handshake".format(self.ip, self.port)
+        return "{} Refused the handshake".format(self.peer)
 
 
 def generate_handshake(info_hash, peer_id):
@@ -160,7 +159,26 @@ class Peer(object):
 
     def receive_handshake(self):
         # TODO: to implement this we need to a way to this async
-        pass
+        handshake_length_without_pstr = 49  # taken from the specification
+        pstrlen_byte_len = 1 # pstrlen is a single raw byte
+
+        self.socket.receive(pstrlen_byte_len)  # pstrlen is a single raw byte
+        reply = self.socket.get_reply(block=True)
+        if reply.status != socketthread.SocketReply.SUCCESS:
+            raise HandshakeException(self)
+        pstrlen = reply.payload
+
+        self.socket.receive(pstrlen
+                            + handshake_length_without_pstr
+                            - pstrlen_byte_len)
+
+        reply = self.socket.get_reply(block=True)
+        if reply.status != socketthread.SocketReply.SUCCESS:
+            raise HandshakeException(self)
+
+        raw_handshake = pstrlen + reply.payload
+
+        self.handshake = decode_handshake(raw_handshake)
 
     def receive_message(self):
         """

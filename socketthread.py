@@ -55,7 +55,10 @@ class SocketCommand(object):
     SocketCommand.CLOSE         None
     """
 
-    CONNECT, SEND, RECEIVE, CLOSE = range(4)
+    CONNECT = "connect"
+    SEND = "send"
+    RECEIVE = "receive"
+    CLOSE = "close"
 
     def __init__(self, command, payload=None):
         self.command = command
@@ -71,11 +74,11 @@ class SocketReply(object):
     SocketReply.SUCCESS             # TODO: write this description
     """
 
-    SUCCESS = True
-    ERROR = False
+    SUCCESS = "success"
+    ERROR = "error"
 
-    def __init__(self, reply, payload=None):
-        self.reply = reply
+    def __init__(self, status, payload=None):
+        self.status = status
         self.payload = payload
 
 

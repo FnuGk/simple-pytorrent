@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 import sys
+import time
 from socketthread import SocketReply
 
 from torrent import Torrent
@@ -28,18 +29,23 @@ def main(argv):
         print("Connecting to: {}".format(peer))
         peer.connect()
 
-    while (1):
-        for peer in torrent.peers:
-            reply = peer.socket.get_reply(block=True, timeout=0.01)
-            if reply is None: continue
 
-            if reply.reply == SocketReply.ERROR:
-                print("Error:", reply.payload)
+    while (1):
+        time.sleep(1)
+
+        for peer in torrent.peers:
+            reply = peer.socket.get_reply(block=False)
+            if reply is None:
                 continue
-            elif reply.reply == SocketReply.SUCCESS:
+
+            if reply.status == SocketReply.ERROR:
+                print("Error:", reply.payload, "from {}".format(peer))
+                continue
+            elif reply.status == SocketReply.SUCCESS:
                 print("Connected to: {}".format(peer))
 
-            print("payload:", reply.payload)
+            print("{} reply: {}".format(peer, reply.status))
+            print("{} payload: {}".format(peer, reply.payload))
 
 
 if __name__ == "__main__":

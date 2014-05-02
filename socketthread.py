@@ -263,7 +263,7 @@ class SocketThread(threading.Thread):
 
                 received_data = receive_all(self.socket, message_length)
                 if len(received_data) == message_length:
-                    message = (message_length, received_data)
+                    message = (length_prefix, received_data)
                     self.reply_queue.put(SocketReply(SocketReply.SUCCESS,
                                                      message))
                     return

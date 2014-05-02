@@ -42,6 +42,7 @@ def main(argv):
                 continue
             elif reply.status == SocketReply.SUCCESS:
                 print("Connected to: {}".format(peer))
+                peer.send_handshake(torrent.handshake)
 
             print("{} reply: {}".format(peer, reply.status))
             print("{} payload: {}".format(peer, reply.payload))

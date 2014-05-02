@@ -149,6 +149,13 @@ class Peer(object):
         address = (self.ip, self.port)
         self.socket.connect(address)
 
+    def send_handshake(self, handshake):
+        """
+        Sends the handshake to the peer
+        :param handshake: The handshake to be send
+        """
+        self.socket.send(handshake)
+
     def receive_message(self):
         """
         All messages comes on the form  <length prefix><message ID><payload>.

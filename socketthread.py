@@ -255,7 +255,7 @@ class SocketThread(threading.Thread):
                 elif prefix_size == 2:
                     message_length = struct.unpack(b"!H", length_prefix)[0]
                 elif prefix_size == 4:
-                    message_length = struct.unpack(b"!L", length_prefix)[0]
+                    message_length = struct.unpack(b"!I", length_prefix)[0]
                 elif prefix_size == 8:
                     message_length = struct.unpack(b"!Q", length_prefix)[0]
                 else:

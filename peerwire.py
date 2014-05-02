@@ -158,27 +158,32 @@ class Peer(object):
         self.socket.send(handshake)
 
     def receive_handshake(self):
-        # TODO: to implement this we need to a way to this async
-        handshake_length_without_pstr = 49  # taken from the specification
+        """
+        Receives a handshake from the peer
+        :raise HandshakeException: If something goes wrong raises
+        HandshakeException.
+        """
+
         pstrlen_byte_len = 1 # pstrlen is a single raw byte
+        self.socket.receive_with_prefix(pstrlen_byte_len)
 
-        self.socket.receive(pstrlen_byte_len)  # pstrlen is a single raw byte
-        reply = self.socket.get_reply(block=True)
-        if reply.status != socketthread.SocketReply.SUCCESS:
-            raise HandshakeException(self)
-        pstrlen = reply.payload
-
-        self.socket.receive(pstrlen
-                            + handshake_length_without_pstr
-                            - pstrlen_byte_len)
-
+        # TODO: Implement this in a non blocking way?
         reply = self.socket.get_reply(block=True)
         if reply.status != socketthread.SocketReply.SUCCESS:
             raise HandshakeException(self)
 
-        raw_handshake = pstrlen + reply.payload
+        pstrlen, pstr = reply.payload
 
-        self.handshake = decode_handshake(raw_handshake)
+        # reserved: 8, info_hash: 20, peer_id: 20
+        self.socket.receive(8+20+20)
+
+        reply = self.socket.get_reply(block=True)
+        if reply.status != socketthread.SocketReply.SUCCESS:
+            raise HandshakeException(self)
+
+        handshake = pstrlen + pstr + reply.payload
+        self.handshake = decode_handshake(handshake)
+        return self.handshake
 
     def receive_message(self):
         """

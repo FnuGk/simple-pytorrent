@@ -55,6 +55,7 @@ class SocketCommand(object):
     SocketCommand.CLOSE         None
     """
 
+    # The available socket commands:
     CONNECT = "connect"
     SEND = "send"
     RECEIVE = "receive"
@@ -71,9 +72,11 @@ class SocketReply(object):
     The reply must be either:       payload must be:
 
     SocketReply.ERROR               The Error object
-    SocketReply.SUCCESS             # TODO: write this description
+    SocketReply.SUCCESS
     """
+    # TODO: write description for SocketReply.SUCCESS above
 
+    # The available socket replies
     SUCCESS = "success"
     ERROR = "error"
 
@@ -96,14 +99,14 @@ class SocketThread(threading.Thread):
         self.socket = None
 
         self.alive = threading.Event()
-        self.start()
+        self.start() # TODO: Should we really call this here?
         self.alive.set()
 
     def run(self):
         while self.alive.isSet():
             try:
                 # Use a timeout value so we don't block forever
-                cmd = self.command_queue.get(True, 0.1)
+                cmd = self.command_queue.get(block=True, timeout=0.1)
                 if cmd.command == SocketCommand.CONNECT:
                     address = cmd.payload
                     self._handle_CONNECT(address)

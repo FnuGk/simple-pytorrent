@@ -36,6 +36,7 @@ def generate_peer_id():
     # Optimally we would include something specific for this machine
     # in order to make the peer_id more unique for this machine but
     # we omit that for simplicity
+    # TODO: Should this be wrapped in a call to bytes?
     while len(peer_id) != 20:
         peer_id += random.choice(string.digits + string.ascii_letters)
 

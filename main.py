@@ -29,8 +29,7 @@ def main(argv):
         print("Connecting to: {}".format(peer))
         peer.connect()
 
-
-    while (1):
+    while 1:
         time.sleep(1)
 
         for peer in torrent.peers:

@@ -99,7 +99,7 @@ class SocketThread(threading.Thread):
         self.socket = None
 
         self.alive = threading.Event()
-        self.start() # TODO: Should we really call this here?
+        self.start()  # TODO: Should we really call this here?
         self.alive.set()
 
     def run(self):
@@ -121,6 +121,7 @@ class SocketThread(threading.Thread):
                 else:
                     # TODO: Handle invalid command
                     pass
+
                 # TODO: should we call command_queue.task_done() here?
             except queue.Empty:
                 continue
@@ -173,7 +174,6 @@ class SocketThread(threading.Thread):
             return reply
         except queue.Empty:
             return None
-
 
     def _handle_CONNECT(self, address):
         """

@@ -16,7 +16,6 @@ from __future__ import (
     unicode_literals
 )
 
-import socket
 import struct
 import sys
 from socketthread import receive_all, SocketThread
@@ -83,7 +82,6 @@ def generate_handshake(info_hash, peer_id):
     return handshake
 
 
-
 def decode_handshake(handshake):
     """
     Decodes a received handshake.
@@ -126,7 +124,7 @@ class Peer(object):
 
         self.peers_info_hash = None
         self.has_shook_hands = False
-        self.socket = SocketThread() # TODO: Should we inherit from this instead
+        self.socket = SocketThread()  # TODO: Should we inherit from this instead
 
         self.peer_id = peer_id
 
@@ -144,10 +142,8 @@ class Peer(object):
     def connect(self):
         """
         Creates and initiates a tcp connection to the peer.
-
-        :param handshake: The handshake that is send to the peer.
-        :return: True if success, False on failure
         """
+
         address = (self.ip, self.port)
         self.socket.connect(address)
 

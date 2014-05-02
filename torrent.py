@@ -57,7 +57,6 @@ class Torrent(object):
         self.peers = []
         self.bitfield = peerwire.Bitfield()
 
-
     def get_peers(self):
         peers = tracker.get_peers(self.meta_info, PEER_ID)
         peers = [peerwire.Peer(peer['ip'], peer['port'], peer['peer_id'])

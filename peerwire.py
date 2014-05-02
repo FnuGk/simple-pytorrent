@@ -122,6 +122,8 @@ class Peer(object):
         self.ip = ip
         self.port = port
 
+        self.handshake = None
+
         self.peers_info_hash = None
         self.has_shook_hands = False
 
@@ -155,6 +157,10 @@ class Peer(object):
         :param handshake: The handshake to be send
         """
         self.socket.send(handshake)
+
+    def receive_handshake(self):
+        # TODO: to implement this we need to a way to this async
+        pass
 
     def receive_message(self):
         """

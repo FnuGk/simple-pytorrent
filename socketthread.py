@@ -259,7 +259,9 @@ class SocketThread(threading.Thread):
                 elif prefix_size == 8:
                     message_length = struct.unpack(b"!Q", length_prefix)[0]
                 else:
-                    message_length = struct.unpack(b"!P", length_prefix)[0]
+                    error = "prefix_size must be either 1,2,4 or 8 got {}".\
+                        format(prefix_size)
+                    raise TypeError(error)
 
                 received_data = receive_all(self.socket, message_length)
                 if len(received_data) == message_length:

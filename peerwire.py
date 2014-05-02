@@ -18,7 +18,7 @@ from __future__ import (
 
 import struct
 import sys
-from socketthread import receive_all, SocketThread
+import socketthread
 
 
 if sys.version_info.major == 2:
@@ -124,7 +124,9 @@ class Peer(object):
 
         self.peers_info_hash = None
         self.has_shook_hands = False
-        self.socket = SocketThread()  # TODO: Should we inherit from this instead
+
+        # TODO: Should we inherit from this instead ?
+        self.socket = socketthread.SocketThread()
 
         self.peer_id = peer_id
 
@@ -157,7 +159,7 @@ class Peer(object):
         """
 
         # length prefix is a four byte big-endian value
-        length_prefix = receive_all(self.socket, LENGTH_PREFIX_SIZE)
+        length_prefix = socketthread.receive_all(self.socket, LENGTH_PREFIX_SIZE)
         length_prefix = struct.unpack(b">I", length_prefix)[0]  # it's a tuple
         if length_prefix == 0:
             # keep-alive: <len=0000>
@@ -171,7 +173,7 @@ class Peer(object):
             # amount of time is generally two minutes.
             print("keep alive")
             return
-        message = receive_all(self.socket, length_prefix)
+        message = socketthread.receive_all(self.socket, length_prefix)
 
         # The message ID is a single decimal byte so just extract it from the
         # received message

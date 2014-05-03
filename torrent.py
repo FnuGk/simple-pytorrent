@@ -65,7 +65,9 @@ class Torrent(object):
         # Maybe check for duplicates?
         self.peers.extend(peers)
 
+    def serve_forever(self):
 
-
-
-
+        # First we try to connect to all peers
+        self.get_peers()
+        for peer in self.peers:
+            peer.connect()

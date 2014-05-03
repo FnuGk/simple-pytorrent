@@ -106,6 +106,9 @@ class SocketThread(threading.Thread):
         self.start()  # TODO: Should we really call this here?
         self.alive.set()
 
+        self.connected = threading.Event()
+        self.connected.clear()
+
     def run(self):
         while self.alive.isSet():
             try:
@@ -137,6 +140,8 @@ class SocketThread(threading.Thread):
         self.alive.clear()
         threading.Thread.join(self, timeout)
 
+    def is_connected(self):
+        return self.connected.isSet()
 
     def connect(self, address):
         """
@@ -203,6 +208,7 @@ class SocketThread(threading.Thread):
 
         try:
             self.socket.connect(address)
+            self.connected.set()
             self.reply_queue.put(SocketReply(SocketReply.SUCCESS))
         except socket.error as e:
             self.reply_queue.put(SocketReply(SocketReply.ERROR, e))
@@ -213,6 +219,7 @@ class SocketThread(threading.Thread):
         opened.
         """
         self.socket.close()
+        self.connected.clear()
         self.reply_queue.put(SocketReply(SocketReply.SUCCESS))
 
     def _handle_SEND(self, payload):

@@ -142,6 +142,9 @@ class Peer(object):
     def __str__(self):
         return "Peer: {ip}:{port}".format(ip=self.ip, port=self.port)
 
+    def is_connected(self):
+        return self.socket.is_connected()
+
     def connect(self):
         """
         Creates and initiates a tcp connection to the peer.

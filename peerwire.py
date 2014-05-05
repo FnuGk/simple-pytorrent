@@ -145,6 +145,10 @@ class Peer(object):
     def is_connected(self):
         return self.socket.is_connected()
 
+    def get_reply(self, block=True, timeout=None):
+        reply = self.socket.get_reply(block, timeout)
+        return reply
+
     def connect(self):
         """
         Creates and initiates a tcp connection to the peer.

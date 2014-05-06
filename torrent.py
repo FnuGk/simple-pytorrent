@@ -7,6 +7,7 @@ from __future__ import (
 import random
 import string
 import sys
+import time
 
 import bencode
 import peerwire
@@ -66,8 +67,36 @@ class Torrent(object):
         self.peers.extend(peers)
 
     def serve_forever(self):
+        self.get_peers()  # We need some peers to talk to
 
-        # First we try to connect to all peers
-        self.get_peers()
         for peer in self.peers:
+            print("Connecting to: {}".format(peer))
             peer.connect()
+
+        while 1:
+            time.sleep(1)
+
+            for peer in self.peers:
+                if not peer.is_connected():
+                    continue
+
+                replies = peer.get_all_replies(block=False)
+
+                for reply in replies:
+                    if not peer.has_shook_hands:
+                        peer.send_handshake(self.handshake)
+                        reply = peer.get_reply(block=True)
+                        if reply.status == "error":
+                            error = reply.payload
+                            raise error
+
+                        assert reply.status == "success"
+
+                        peer.receive_handshake()
+                        if not peer.handshake == self.handshake:
+                            # TODO: better way to handle this error?
+                            peer.has_shook_hands = False
+                            continue
+                        print("hands shook with {}".format(peer))
+                    print("{} reply: {}".format(peer, reply.status))
+                    print("{} payload: {}".format(peer, reply.payload))

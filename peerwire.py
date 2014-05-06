@@ -182,9 +182,11 @@ class Peer(object):
         """
         self.socket.send(handshake)
 
-    def receive_handshake(self):
+    def receive_handshake(self, block=True, timeout=None):
         """
         Receives a handshake from the peer
+        :param block: {Boolean} if the call should be blocking
+        :param timeout: if block=True block for this amount of time before
         :raise HandshakeException: If something goes wrong raises
         HandshakeException.
         """
@@ -193,7 +195,7 @@ class Peer(object):
         self.socket.receive_with_prefix(pstrlen_byte_len)
 
         # TODO: Implement this in a non blocking way?
-        reply = self.socket.get_reply(block=True)
+        reply = self.socket.get_reply(block=block, timeout=timeout)
         if reply.status != socketthread.SocketReply.SUCCESS:
             raise HandshakeException(self)
 
@@ -202,12 +204,12 @@ class Peer(object):
         # reserved: 8, info_hash: 20, peer_id: 20
         self.socket.receive(8+20+20)
 
-        reply = self.socket.get_reply(block=True)
+        reply = self.socket.get_reply(block=block, timeout=timeout)
         if reply.status != socketthread.SocketReply.SUCCESS:
             raise HandshakeException(self)
 
         handshake = pstrlen + pstr + reply.payload
-        self.handshake = decode_handshake(handshake)
+        self.handshake = handshake
         return self.handshake
 
     def receive_message(self):

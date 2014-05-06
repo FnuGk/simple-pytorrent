@@ -143,11 +143,29 @@ class Peer(object):
         return "Peer: {ip}:{port}".format(ip=self.ip, port=self.port)
 
     def is_connected(self):
+        """
+        Check if the underlying socket is open
+        :return: {Boolean}
+        """
         return self.socket.is_connected()
 
     def get_reply(self, block=True, timeout=None):
-        reply = self.socket.get_reply(block, timeout)
-        return reply
+        """
+        Retrieves a reply from the underlying socket
+        :param block: {Boolean} if the call should be blocking
+        :param timeout: if block=True block for this amount of time before
+        giving up
+        :return: The socketthread reply
+        """
+        return self.socket.get_reply(block, timeout)
+
+    def get_all_replies(self, block=True, timeout=None):
+        replies = []
+        reply = self.get_reply(block=block, timeout=timeout)
+        while reply is not None:
+            replies.append(reply)
+            reply = self.get_reply(block=block)
+        return replies
 
     def connect(self):
         """

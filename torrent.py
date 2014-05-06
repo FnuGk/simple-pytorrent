@@ -84,19 +84,28 @@ class Torrent(object):
 
                 for reply in replies:
                     if not peer.has_shook_hands:
-                        peer.send_handshake(self.handshake)
-                        reply = peer.get_reply(block=True)
-                        if reply.status == "error":
-                            error = reply.payload
-                            raise error
+                        try:
+                            print("Sending handshake to {}".format(peer))
+                            peer.send_handshake(self.handshake)
+                            reply = peer.get_reply(block=True)
+                            if reply.status == "error":
+                                error = reply.payload
+                                raise error
 
-                        assert reply.status == "success"
+                            assert reply.status == "success"
 
-                        peer.receive_handshake()
-                        if not peer.handshake == self.handshake:
-                            # TODO: better way to handle this error?
-                            peer.has_shook_hands = False
+                            peer.receive_handshake()
+
+                            print("{} shook hands: {}".format(peer,
+                                                              repr(peer.handshake)))
+                            if not peer.handshake == self.handshake:
+                                # TODO: better way to handle this error?
+                                peer.has_shook_hands = False
+                                continue
+                            print("hands shook with {}".format(peer))
+                        except peerwire.HandshakeException:
                             continue
-                        print("hands shook with {}".format(peer))
+
+                    
                     print("{} reply: {}".format(peer, reply.status))
                     print("{} payload: {}".format(peer, reply.payload))

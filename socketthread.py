@@ -93,7 +93,6 @@ class SocketThread(threading.Thread):
     Implements the threading.Thread interface
     """
     # TODO: should we keep track of what command corresponds to what reply?
-    # TODO: What if message first sends a length prefix? implement this?
 
     def __init__(self):
         super(SocketThread, self).__init__()
@@ -103,7 +102,6 @@ class SocketThread(threading.Thread):
         self.socket = None
 
         self.alive = threading.Event()
-        self.start()  # TODO: Should we really call this here?
         self.alive.set()
 
         self.connected = threading.Event()

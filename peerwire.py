@@ -128,6 +128,7 @@ class Peer(object):
 
         # TODO: Should we inherit from this instead ?
         self.socket = socketthread.SocketThread()
+        self.socket.start()
 
         self.peer_id = peer_id
 

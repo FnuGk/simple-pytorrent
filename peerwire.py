@@ -116,7 +116,7 @@ def decode_handshake(handshake):
 
 
 class Peer(object):
-    # TODO: Somehow make the Peer do I/O in a threaded manner
+
     def __init__(self, ip, port, peer_id):
         self.ip = ip
         self.port = port
@@ -126,7 +126,7 @@ class Peer(object):
         self.peers_info_hash = None
         self.has_shook_hands = False
 
-        # TODO: Should we inherit from this instead ?
+
         self.socket = socketthread.SocketThread()
         self.socket.start()
 
@@ -195,9 +195,8 @@ class Peer(object):
         pstrlen_byte_len = 1 # pstrlen is a single raw byte
         self.socket.receive_with_prefix(pstrlen_byte_len)
 
-        # TODO: Implement this in a non blocking way?
         reply = self.socket.get_reply(block=block, timeout=timeout)
-        if reply.status != socketthread.SocketReply.SUCCESS:
+        if reply is None or reply.status != socketthread.SocketReply.SUCCESS:
             raise HandshakeException(self)
 
         pstrlen, pstr = reply.payload
@@ -206,7 +205,7 @@ class Peer(object):
         self.socket.receive(8+20+20)
 
         reply = self.socket.get_reply(block=block, timeout=timeout)
-        if reply.status != socketthread.SocketReply.SUCCESS:
+        if reply is None or reply.status != socketthread.SocketReply.SUCCESS:
             raise HandshakeException(self)
 
         handshake = pstrlen + pstr + reply.payload

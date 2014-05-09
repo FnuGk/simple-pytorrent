@@ -90,7 +90,8 @@ class SocketReply(object):
 
 class SocketThread(threading.Thread):
     """
-    Implements the threading.Thread interface
+    Implements the threading.Thread interface and wraps a normal network socket.
+    This makes it possible to do non blocking network I/O
     """
     # TODO: should we keep track of what command corresponds to what reply?
 
@@ -108,9 +109,15 @@ class SocketThread(threading.Thread):
         self.connected.clear()
 
     def run(self):
+        """
+        Overrides the threading.Thread method run. We keep polling the
+        command_queue to see if there a new command should be handled.
+        """
         while self.alive.isSet():
             try:
-                # Use a timeout value so we don't block forever
+                # We have to have a timeout value to not block indefinitely
+                # because otherwise we cant do the alive check in the outer
+                # while loop because we would be stuck here in the loop body.
                 cmd = self.command_queue.get(block=True, timeout=0.1)
                 if cmd.command == SocketCommand.CONNECT:
                     address = cmd.payload
@@ -135,10 +142,22 @@ class SocketThread(threading.Thread):
                 continue
 
     def join(self, timeout=None):
+        """
+        Overrides the threading.Thread method join. We clear the alive event so
+        that the thread knows to stop listening for new commands.
+        :param timeout: Same as threading.Thread
+        """
         self.alive.clear()
         threading.Thread.join(self, timeout)
 
     def is_connected(self):
+        """
+        Check if the socket has been connected.
+        @note That even though this value update automatically when when successfully
+        connected or closed the socket. It is still necessary to check the reply
+        queue if the connect/close command was successful.
+        :return: {Boolean}
+        """
         return self.connected.isSet()
 
     def connect(self, address):

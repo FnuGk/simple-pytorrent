@@ -37,11 +37,13 @@ class HandshakeException(Exception):
     Base exception for peer wire hand shake
     """
 
-    def __init__(self, peer):
+    def __init__(self, peer, error_string):
         self.peer = peer
+        self.error_string = error_string
 
     def __str__(self):
-        return "{} Refused the handshake".format(self.peer)
+        return "{} Refused the handshake due to: {}".format(self.peer,
+                                                            self.error_string)
 
 
 def generate_handshake(info_hash, peer_id):
@@ -117,7 +119,6 @@ def decode_handshake(handshake):
 
 
 class Peer(object):
-
     def __init__(self, ip, port, peer_id):
         self.ip = ip
         self.port = port
@@ -126,7 +127,6 @@ class Peer(object):
 
         self.peers_info_hash = None
         self.has_shook_hands = False
-
 
         self.socket = socketthread.SocketThread()
         self.socket.start()
@@ -194,9 +194,11 @@ class Peer(object):
 
         self.receive_handshake(block=True, timeout=1)
 
+        # TODO: We should not compare the raw handshake but the derived info_hash
         if not self.handshake == handshake:
             self.has_shook_hands = False
-            raise HandshakeException(self)
+            print(self.handshake, handshake)
+            raise HandshakeException(self, "Handshake differs.")
         else:
             self.has_shook_hands = True
 
@@ -216,25 +218,30 @@ class Peer(object):
         HandshakeException.
         """
 
-        pstrlen_byte_len = 1 # pstrlen is a single raw byte
-        self.socket.receive_with_prefix(pstrlen_byte_len)
+        try:
+            pstrlen_byte_len = 1  # pstrlen is a single raw byte
+            self.socket.receive_with_prefix(pstrlen_byte_len)
 
-        reply = self.socket.get_reply(block=block, timeout=timeout)
-        if reply is None or reply.status != socketthread.SocketReply.SUCCESS:
-            raise HandshakeException(self)
+            # TODO: check for None response
+            reply = self.socket.get_reply(block=block, timeout=timeout)
+            if reply.status == socketthread.SocketReply.ERROR:
+                raise reply.payload
 
-        pstrlen, pstr = reply.payload
+            pstrlen, pstr = reply.payload
 
-        # reserved: 8, info_hash: 20, peer_id: 20
-        self.socket.receive(8+20+20)
+            # reserved: 8, info_hash: 20, peer_id: 20
+            self.socket.receive(8 + 20 + 20)
 
-        reply = self.socket.get_reply(block=block, timeout=timeout)
-        if reply is None or reply.status != socketthread.SocketReply.SUCCESS:
-            raise HandshakeException(self)
+            # TODO: check for None response
+            reply = self.socket.get_reply(block=block, timeout=timeout)
+            if reply.status == socketthread.SocketReply.ERROR:
+                raise reply.payload
 
-        handshake = pstrlen + pstr + reply.payload
-        self.handshake = handshake
-        return self.handshake
+            handshake = pstrlen + pstr + reply.payload
+            self.handshake = handshake
+            return self.handshake
+        except socket.error as e:
+            raise HandshakeException(self, str(e))
 
     def receive_message(self):
         """

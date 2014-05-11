@@ -194,8 +194,10 @@ class Peer(object):
 
         self.receive_handshake(block=True, timeout=1)
 
-        # TODO: We should not compare the raw handshake but the derived info_hash
-        if not self.handshake == handshake:
+        peers_info_hash = decode_handshake(self.handshake)['info_hash']
+        info_hash = decode_handshake(handshake)['info_hash']
+
+        if not peers_info_hash == info_hash:
             self.has_shook_hands = False
             print(self.handshake, handshake)
             raise HandshakeException(self, "Handshake differs.")

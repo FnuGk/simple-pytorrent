@@ -15,6 +15,7 @@ from __future__ import (
     print_function,
     unicode_literals
 )
+import socket
 
 import struct
 import sys
@@ -175,6 +176,29 @@ class Peer(object):
 
         address = (self.ip, self.port)
         self.socket.connect(address)
+
+    def attempt_handshake(self, handshake):
+        """
+        Attempts to initiate a handshake with the peer. The has_shook_hands
+        property will be updated to True if the handshake is successfully made.
+        :param handshake: The handshake used to send to the peer
+        :raise HandshakeException: If handshake fails
+        """
+        self.socket.send(handshake)
+        reply = self.get_reply(block=True, timeout=1)
+        if reply.status == "error":
+            error = reply.payload
+            raise error
+
+        assert reply.status == "success"
+
+        self.receive_handshake(block=True, timeout=1)
+
+        if not self.handshake == handshake:
+            self.has_shook_hands = False
+            raise HandshakeException(self)
+        else:
+            self.has_shook_hands = True
 
     def send_handshake(self, handshake):
         """
@@ -347,7 +371,7 @@ class Peer(object):
 
             pass  # TODO: Implement this
 
-        print(repr(message_id), repr(payload))
+        print(self, repr(message_id), repr(payload))
 
 
 class Bitfield(object):

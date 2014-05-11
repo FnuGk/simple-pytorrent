@@ -164,7 +164,7 @@ class Peer(object):
     def get_all_replies(self, block=True, timeout=None):
         replies = []
         reply = self.get_reply(block=block, timeout=timeout)
-        while reply is not None:
+        while reply.status is not None:
             replies.append(reply)
             reply = self.get_reply(block=block)
         return replies
@@ -201,7 +201,7 @@ class Peer(object):
             if not peers_info_hash == info_hash:
                 self.has_shook_hands = False
                 print(self.handshake, handshake)
-                raise HandshakeException(self, "Handshake differs.")
+                raise HandshakeException(self, "info_hash differs.")
             else:
                 self.has_shook_hands = True
         except socket.error as e:
@@ -227,19 +227,22 @@ class Peer(object):
             pstrlen_byte_len = 1  # pstrlen is a single raw byte
             self.socket.receive_with_prefix(pstrlen_byte_len)
 
-            # TODO: check for None response
             reply = self.socket.get_reply(block=block, timeout=timeout)
-            if reply.status == socketthread.SocketReply.ERROR:
+            if reply.status is None:
+                raise HandshakeException(self, "No response")
+            elif reply.status == socketthread.SocketReply.ERROR:
                 raise reply.payload
+
 
             pstrlen, pstr = reply.payload
 
             # reserved: 8, info_hash: 20, peer_id: 20
             self.socket.receive(8 + 20 + 20)
 
-            # TODO: check for None response
             reply = self.socket.get_reply(block=block, timeout=timeout)
-            if reply.status == socketthread.SocketReply.ERROR:
+            if reply.status is None:
+                raise HandshakeException(self, "No response")
+            elif reply.status == socketthread.SocketReply.ERROR:
                 raise reply.payload
 
             handshake = pstrlen + pstr + reply.payload

@@ -76,12 +76,14 @@ class SocketReply(object):
 
     SocketReply.ERROR               The Error object
     SocketReply.SUCCESS
+    SocketReply.None                None
     """
     # TODO: write description for SocketReply.SUCCESS above
 
     # The available socket replies
     SUCCESS = "success"
     ERROR = "error"
+    NONE = None
 
     def __init__(self, status, payload=None):
         self.status = status
@@ -211,7 +213,7 @@ class SocketThread(threading.Thread):
             # TODO: should we call reply_queue.task_done() here?
             return reply
         except queue.Empty:
-            return None
+            return SocketReply(SocketReply.NONE, None)
 
     def _handle_CONNECT(self, address):
         """

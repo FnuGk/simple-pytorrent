@@ -97,5 +97,6 @@ class Torrent(object):
                 if not replies:
                     try:
                         peer.receive_message()
-                    except:
-                        print("receive msg error")
+                    except Exception as e:
+                        # TODO: Limit the Exception and disconnect the peer
+                        print("receive msg error", e)

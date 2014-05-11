@@ -200,8 +200,9 @@ class Peer(object):
 
             if not peers_info_hash == info_hash:
                 self.has_shook_hands = False
-                print(self.handshake, handshake)
-                raise HandshakeException(self, "info_hash differs.")
+                error_str = "info_hash differs, Expected {} but got {}.".format(
+                    info_hash.encode('hex'),peers_info_hash.encode('hex'))
+                raise HandshakeException(self, error_str)
             else:
                 self.has_shook_hands = True
         except socket.error as e:

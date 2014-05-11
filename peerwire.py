@@ -184,25 +184,28 @@ class Peer(object):
         :param handshake: The handshake used to send to the peer
         :raise HandshakeException: If handshake fails
         """
-        self.socket.send(handshake)
-        reply = self.get_reply(block=True, timeout=1)
-        if reply.status == "error":
-            error = reply.payload
-            raise error
+        try:
+            self.socket.send(handshake)
+            reply = self.get_reply(block=True, timeout=1)
+            if reply.status == "error":
+                error = reply.payload
+                raise error
 
-        assert reply.status == "success"
+            assert reply.status == "success"
 
-        self.receive_handshake(block=True, timeout=1)
+            self.receive_handshake(block=True, timeout=1)
 
-        peers_info_hash = decode_handshake(self.handshake)['info_hash']
-        info_hash = decode_handshake(handshake)['info_hash']
+            peers_info_hash = decode_handshake(self.handshake)['info_hash']
+            info_hash = decode_handshake(handshake)['info_hash']
 
-        if not peers_info_hash == info_hash:
-            self.has_shook_hands = False
-            print(self.handshake, handshake)
-            raise HandshakeException(self, "Handshake differs.")
-        else:
-            self.has_shook_hands = True
+            if not peers_info_hash == info_hash:
+                self.has_shook_hands = False
+                print(self.handshake, handshake)
+                raise HandshakeException(self, "Handshake differs.")
+            else:
+                self.has_shook_hands = True
+        except socket.error as e:
+            raise HandshakeException(self, str(e))
 
     def send_handshake(self, handshake):
         """

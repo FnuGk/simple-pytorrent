@@ -292,6 +292,10 @@ class SocketThread(threading.Thread):
                 if message_length == 0:
                     received_data = b''
                 else:
+                    # A Peer sometimes seems to send a message that raises an
+                    # Overflow error in the call to receive_all.
+                    # TODO: debug overflow error
+                    # print("msg len:", message_length, "prefix_size:", prefix_size)
                     received_data = receive_all(self.socket, message_length)
 
                 if len(received_data) == message_length:

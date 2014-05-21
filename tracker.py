@@ -183,9 +183,7 @@ def get_peers(meta_info, peer_id):
                 if isinstance(peers, string_type):
                     peers = binary_peer_extract(peers)
 
-                # TODO: use extend instead?
-                for peer in peers:
-                    peer_list.append(peer)
+                peer_list.extend(peers)
     return peer_list
 
 
